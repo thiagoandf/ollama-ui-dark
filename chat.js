@@ -23,11 +23,49 @@ function generateShortUUID() {
   return uuid;
 }
 
+function updateChatIdInQueryString(chatId) {
+  const searchParams = new URLSearchParams(window.location.search);
+  searchParams.set('uuid', chatId);
+  window.history.replaceState({}, '', `?${searchParams.toString()}`);
+}
+
+function populateChatsList() {
+  const chats = JSON.parse(localStorage.getItem('chats'));
+  if (!chats) {
+    return;
+  }
+  const chatsDiv = document.getElementById('chats-list');
+  chatsDiv.innerHTML = '';
+  chats.forEach((chatId) => {
+    const chatDiv = document.createElement('div');
+    chatDiv.className = 'chat-list-item';
+    chatDiv.innerText = chatId;
+    // change the uuid searchParam to the chatId on click 
+    chatDiv.addEventListener('click', () => {
+      updateChatIdInQueryString(chatId);
+
+      showChatHistory();
+    })
+    chatsDiv.appendChild(chatDiv);
+  })
+}
+
+
 function showChatHistory() {
   const searchParams = new URLSearchParams(window.location.search);
   const chatId = searchParams.get('uuid');
 
-  if (!chatId || !localStorage.getItem(chatId)) {
+  if (!chatId) {
+    const searchParams = new URLSearchParams(window.location.search);
+    searchParams.set("uuid", generateShortUUID());
+    
+    // replace current url without reload
+    let newPathWithQuery = `${window.location.pathname}?${searchParams.toString()}`
+    window.history.replaceState(null, '', newPathWithQuery);
+    return;
+  }
+
+  if (!localStorage.getItem(chatId)) {
     return;
   }
 
@@ -62,9 +100,7 @@ function updateModelInQueryString(model) {
   if (window.history.replaceState && 'URLSearchParams' in window) {
     const searchParams = new URLSearchParams(window.location.search);
     searchParams.set("model", model);
-    if (searchParams.get('uuid') === null) {
-      searchParams.set("uuid", generateShortUUID());
-    }
+    searchParams.set("uuid", generateShortUUID());
     
     // replace current url without reload
     let newPathWithQuery = `${window.location.pathname}?${searchParams.toString()}`
@@ -124,10 +160,26 @@ const autoResizePadding = new ResizeObserver(() => {
 autoResizePadding.observe(document.getElementById('input-area'));
 
 
-
 // Function to get the selected model
 function getSelectedModel() {
   return document.getElementById('model-select').value;
+}
+
+function clearChat() {
+  const chatHistory = document.getElementById('chat-history');
+  chatHistory.innerHTML = '';
+}
+
+function newChat() {
+  clearChat();
+  document.getElementById('chat-container').style.display = 'block';
+
+  const searchParams = new URLSearchParams(window.location.search);
+  searchParams.set("uuid", generateShortUUID());
+    
+  // replace current url without reload
+  let newPathWithQuery = `${window.location.pathname}?${searchParams.toString()}`
+  window.history.replaceState(null, '', newPathWithQuery);
 }
 
 // variables to handle auto-scroll
@@ -191,8 +243,13 @@ function saveChat(userInput, response, context) {
   } 
 
   const chats = JSON.parse(localStorage.getItem('chats'));
+  if (chats.includes(chatId)) {
+    return;
+  }
   chats.push(chatId);
   localStorage.setItem('chats', JSON.stringify(chats));
+
+  populateChatsList();
 }
 
 // Function to handle the user input and call the API functions
@@ -292,10 +349,13 @@ document.getElementById('user-input').addEventListener('keydown', function (e) {
   }
 });
 
+document.getElementById('new-chat-button').addEventListener('click', newChat);
+
 
 window.onload = () => {
   populateModels();
   adjustPadding();
   autoFocusInput();
   showChatHistory();
+  populateChatsList();
 }

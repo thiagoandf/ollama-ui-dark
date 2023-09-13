@@ -18,21 +18,30 @@
 
 <body class="bg-dark">
     <div class="container">
-        <div class="row pt-3 flex-row d-flex justify-content-center">
-            <select class="form-select" id="model-select" style="width: auto;"></select>
-        </div>
-        <div id="scroll-wrapper">
-            <div id="chat-container" class="card bg-dark">
-                <div class="card-body">
-                    <div id="chat-history"></div>
+        <div class="row pt-3">
+            <div class="col-3">
+                <h1>Chats</h1>
+                <button id="new-chat-button" class="btn btn-primary">New Chat</button>
+                <div id="chats-list" class="pt-3"></div>
+            </div>
+            <div class="col-9">
+                <div class="row flex-row d-flex justify-content-center">
+                    <select class="form-select" id="model-select" style="width: auto;"></select>
+                </div>
+                <div id="scroll-wrapper" class="pt-3">
+                    <div id="chat-container" class="card bg-dark">
+                        <div class="card-body">
+                            <div id="chat-history"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="container p-2 bg-dark card" id="input-area">
-        <div class="input-group">
-            <textarea class="form-control" id="user-input" placeholder="Type your question here..."></textarea>
-            <button id="send-button" class="btn btn-primary">Send</button>
+        <div class="container p-2 bg-dark card" id="input-area">
+            <div class="input-group">
+                <textarea class="form-control" id="user-input" placeholder="Type your question here..."></textarea>
+                <button id="send-button" class="btn btn-primary">Send</button>
+            </div>
         </div>
     </div>
 

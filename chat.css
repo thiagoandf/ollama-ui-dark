@@ -45,3 +45,17 @@ body {
   left: 50%;
   transform: translateX(-50%);
 }
+
+.chat-list-item {
+  cursor: pointer;
+  padding: 8px;
+  margin: 0 0 8px 0;
+  background-color: rgb(132, 137, 138);
+  color: white;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.chat-list-item:hover {
+  background-color: rgb(86, 144, 163);
+}
