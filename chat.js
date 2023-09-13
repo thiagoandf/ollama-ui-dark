@@ -29,7 +29,7 @@ function updateModelInQueryString(model) {
     window.history.replaceState(null, '', newPathWithQuery);
   }
 }
- 
+
 // Fetch available models and populate the dropdown
 async function populateModels() {
   document.getElementById('send-button').addEventListener('click', submitRequest);
@@ -168,7 +168,7 @@ async function submitRequest() {
 
   // change autoScroller to keep track of our new responseDiv
   autoScroller.observe(responseDiv);
-   
+
   postRequest(data, interrupt.signal)
     .then(async response => {
       await getResponse(response, parsedResponse => {
