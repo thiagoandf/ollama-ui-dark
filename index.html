@@ -16,17 +16,10 @@
     <link rel="stylesheet" href="/chat.css">
 </head>
 
-<body class="bg-light">
+<body class="bg-dark">
     <div class="container">
-        <div class="row pt-3">
-            <div class="col-8">
-                <h1>Chat with Llama2</h1>
-            </div>
-            <div class="col-4 text-end mb-3">
-                <label for="model-select" class="form-label d-inline-block me-2"
-                    style="font-size: smaller;">Model:</label>
-                <select class="form-select d-inline-block" id="model-select" style="width: auto;"></select>
-            </div>
+        <div class="row pt-3 flex-row d-flex justify-content-center">
+            <select class="form-select" id="model-select" style="width: auto;"></select>
         </div>
         <div id="scroll-wrapper">
             <div id="chat-container" class="card">
@@ -36,7 +29,7 @@
             </div>
         </div>
     </div>
-    <div class="container p-2 bg-light card" id="input-area">
+    <div class="container p-2 bg-dark card" id="input-area">
         <div class="input-group">
             <textarea class="form-control" id="user-input" placeholder="Type your question here..."></textarea>
             <button id="send-button" class="btn btn-primary">Send</button>
