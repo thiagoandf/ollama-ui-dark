@@ -36,7 +36,7 @@ function populateChatsList() {
   }
   const chatsDiv = document.getElementById('chats-list');
   chatsDiv.innerHTML = '';
-  chats.forEach((chatId) => {
+  chats.reverse().forEach((chatId) => {
     const chatDiv = document.createElement('div');
     chatDiv.className = 'chat-list-item';
     chatDiv.innerText = chatId;
