@@ -16,8 +16,7 @@
   "manifest_version": 3,
   "name": "ollama-ui-dark",
   "permissions": [
-    "declarativeNetRequest",
-    "*://localhost:*/*"
+    "declarativeNetRequest"
   ],
   "version": "1.0"
 }

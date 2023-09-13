@@ -15,6 +15,44 @@ function autoFocusInput() {
   userInput.focus();
 }
 
+function generateShortUUID() {
+  // Generate a short UUID
+  const uuid = Math.random().toString(36).substring(2, 9);
+
+  // Return the generated UUID
+  return uuid;
+}
+
+function showChatHistory() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const chatId = searchParams.get('uuid');
+
+  if (!chatId || !localStorage.getItem(chatId)) {
+    return;
+  }
+
+  const chatHistory = JSON.parse(localStorage.getItem(chatId));
+
+  document.getElementById('chat-container').style.display = 'block';
+  const chatHistoryDiv = document.getElementById('chat-history');
+  chatHistoryDiv.innerHTML = '';
+
+  chatHistory.forEach((chat) => {
+    chatHistoryDiv.context = chat.context;
+
+    const userMessageDiv = document.createElement('div');
+    userMessageDiv.className = 'mb-2 user-message text-end';
+    userMessageDiv.innerText = chat.userInput;
+    chatHistoryDiv.appendChild(userMessageDiv);
+
+    const responseDiv = document.createElement('div');
+    responseDiv.className = 'response-message mb-2 text-start';
+    responseDiv.style.minHeight = '3em';
+    responseDiv.innerText = chat.response;
+    chatHistoryDiv.appendChild(responseDiv);
+  })
+}
+
 /*
 takes in model as a string
 updates the query parameters of page url to include model name
@@ -24,8 +62,12 @@ function updateModelInQueryString(model) {
   if (window.history.replaceState && 'URLSearchParams' in window) {
     const searchParams = new URLSearchParams(window.location.search);
     searchParams.set("model", model);
+    if (searchParams.get('uuid') === null) {
+      searchParams.set("uuid", generateShortUUID());
+    }
+    
     // replace current url without reload
-    const newPathWithQuery = `${window.location.pathname}?${searchParams.toString()}`
+    let newPathWithQuery = `${window.location.pathname}?${searchParams.toString()}`
     window.history.replaceState(null, '', newPathWithQuery);
   }
 }
@@ -96,7 +138,7 @@ let isAutoScrollOn = true;
 // autoscroll when new line is added
 const autoScroller = new ResizeObserver(() => {
   if (isAutoScrollOn) {
-    scrollWrapper.scrollIntoView({behavior: "smooth", block: "end"});
+    scrollWrapper.scrollIntoView({ behavior: "smooth", block: "end" });
   }
 });
 
@@ -113,7 +155,7 @@ document.addEventListener("scroll", (event) => {
     ticking = true;
   }
   // if user has scrolled nearly all the way down and autoScroll is disabled, re-enable
-  else if (!ticking && !isAutoScrollOn && 
+  else if (!ticking && !isAutoScrollOn &&
     window.scrollY > lastKnownScrollPosition && // make sure scroll direction is down
     window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 30 // add 30px of space--no need to scroll all the way down, just most of the way
   ) {
@@ -126,6 +168,32 @@ document.addEventListener("scroll", (event) => {
   lastKnownScrollPosition = window.scrollY;
 });
 
+// Function that saves the current chat in the browser local storage
+function saveChat(userInput, response, context) {
+  const chat = {
+    context: context,
+    userInput: userInput,
+    response: response
+  };
+  const searchParams = new URLSearchParams(window.location.search);
+  const chatId = searchParams.get('uuid');
+
+  if (!localStorage.getItem(chatId)) {
+    localStorage.setItem(chatId, '[]');
+  }
+
+  const chatHistory = JSON.parse(localStorage.getItem(chatId));
+  chatHistory.push(chat);
+  localStorage.setItem(chatId, JSON.stringify(chatHistory));
+
+  if (!localStorage.getItem('chats')) {
+    localStorage.setItem('chats', '[]');
+  } 
+
+  const chats = JSON.parse(localStorage.getItem('chats'));
+  chats.push(chatId);
+  localStorage.setItem('chats', JSON.stringify(chats));
+}
 
 // Function to handle the user input and call the API functions
 async function submitRequest() {
@@ -142,7 +210,7 @@ async function submitRequest() {
   userMessageDiv.className = 'mb-2 user-message text-end';
   userMessageDiv.innerText = input;
   chatHistory.appendChild(userMessageDiv);
-  
+
   // Create response container
   let responseDiv = document.createElement('div');
   responseDiv.className = 'response-message mb-2 text-start';
@@ -172,6 +240,7 @@ async function submitRequest() {
   postRequest(data, interrupt.signal)
     .then(async response => {
       await getResponse(response, parsedResponse => {
+        console.log(response, parsedResponse)
         let word = parsedResponse.response;
         if (parsedResponse.done) {
           chatHistory.context = parsedResponse.context;
@@ -187,10 +256,12 @@ async function submitRequest() {
             });
           };
           responseDiv.appendChild(copyButton);
+
+          saveChat(input, responseDiv.hidden_text, parsedResponse.context);
         }
         // add word to response
         if (word != undefined) {
-          if (responseDiv.hidden_text == undefined){
+          if (responseDiv.hidden_text == undefined) {
             responseDiv.hidden_text = "";
           }
           responseDiv.hidden_text += word;
@@ -201,7 +272,7 @@ async function submitRequest() {
     .then(() => {
       stopButton.remove(); // Remove stop button from DOM now that all text has been generated
       spinner.remove();
-    }) 
+    })
     .catch(error => {
       if (error !== 'Stop button pressed') {
         console.error(error);
@@ -226,4 +297,5 @@ window.onload = () => {
   populateModels();
   adjustPadding();
   autoFocusInput();
+  showChatHistory();
 }
